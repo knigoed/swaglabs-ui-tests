@@ -1,14 +1,16 @@
-from playwright.sync_api import expect, Page
 import pytest
+from playwright.sync_api import expect, Page
+from pages.authentication.login_page import LoginPage
 
 class TestRegistration:
     def test_success_login(self, chromium_page: Page) -> None:
-        chromium_page.goto('https://www.saucedemo.com/')
+        login_page = LoginPage(page=chromium_page)
 
-        chromium_page.locator('[data-test="username"]').fill('standard_user')
-        chromium_page.locator('[data-test="password"]').fill('secret_sauce')
+        login_page.visit('https://www.saucedemo.com/')
 
-        chromium_page.locator('[data-test="login-button"]').click()
+        login_page.fill_login_form(user_name='standard_user', password='secret_sauce')
+
+        login_page.login_button.click()
 
         expect(
             chromium_page.locator('[data-test="primary-header"]')
@@ -22,18 +24,15 @@ class TestRegistration:
                                                  ("standard_user", "password"),
                                                  ("user", "password")])
     def test_wrong_username_or_password_registration(self, chromium_page: Page, username: str, password: str):
-        chromium_page.goto('https://www.saucedemo.com/')
+        login_page = LoginPage(page=chromium_page)
 
-        chromium_page.locator('[data-test="username"]').fill(username)
-        chromium_page.locator('[data-test="password"]').fill(password)
+        login_page.visit('https://www.saucedemo.com/')
 
-        chromium_page.locator('[data-test="login-button"]').click()
+        login_page.fill_login_form(user_name=username, password=password)
 
-        wrong_username_or_password_alert = chromium_page.locator('[data-test="error"]')
+        login_page.login_button.click()
 
-        expect(wrong_username_or_password_alert).to_be_visible()
-        expect(wrong_username_or_password_alert).to_have_text(
-            'Epic sadface: Username and password do not match any user in this service')
+        login_page.check_visible_wrong_email_or_password_alert()
 
         chromium_page.wait_for_timeout(5000)
 
