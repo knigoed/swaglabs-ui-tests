@@ -2,6 +2,8 @@ import pytest
 from playwright.sync_api import expect, Page
 from pages.authentication.login_page import LoginPage
 
+@pytest.mark.regression
+@pytest.mark.authorization
 class TestRegistration:
     def test_success_login(self, chromium_page: Page) -> None:
         login_page = LoginPage(page=chromium_page)
